@@ -31,6 +31,7 @@ from .const import (
     CONF_ENTRY_DELAY,
     CONF_EXCLUDED,
     CONF_EXIT_DELAY,
+    CONF_GLOBAL_EXCLUDE,
     CONF_PRESENCE_ENTITIES,
     CONF_INTERNAL_ALARM_ENABLED,
     CONF_MOBILE_NOTIFY_ENABLED,
@@ -144,10 +145,13 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         self.async_update_listeners()
 
     def _master_sensors(self) -> list[str]:
-        """All candidate indoor sensors (auto-all, or the explicit list)."""
+        """Candidate indoor sensors (auto-all or explicit) minus global excludes."""
         if self.get_config(CONF_MONITOR_ALL, True):
-            return discover_motion_sensors(self.hass)
-        return list(self.get_config(CONF_MONITORED_SENSORS, []) or [])
+            base = discover_motion_sensors(self.hass)
+        else:
+            base = list(self.get_config(CONF_MONITORED_SENSORS, []) or [])
+        glob = set(self.get_config(CONF_GLOBAL_EXCLUDE, []) or [])
+        return [s for s in base if s not in glob]
 
     def monitored_sensors(self, mode: str | None) -> list[str]:
         """Master monitored set minus this mode's exclusions."""

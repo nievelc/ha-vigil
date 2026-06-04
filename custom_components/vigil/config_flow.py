@@ -26,6 +26,7 @@ from .const import (
     CONF_EXCLUDED,
     CONF_EXIT_DELAY,
     CONF_FLASH_LIGHTS,
+    CONF_GLOBAL_EXCLUDE,
     CONF_INTRUDER_MESSAGE,
     CONF_MONITOR_ALL,
     CONF_MONITORED_SENSORS,
@@ -110,6 +111,11 @@ def _sensors_schema(hass, d: dict[str, Any]) -> vol.Schema:
         vol.Optional(
             CONF_APPROACH_SENSORS,
             default=d.get(CONF_APPROACH_SENSORS) or discover_person_sensors(hass),
+        ): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
+        ),
+        vol.Optional(
+            CONF_GLOBAL_EXCLUDE, default=d.get(CONF_GLOBAL_EXCLUDE, [])
         ): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
         ),

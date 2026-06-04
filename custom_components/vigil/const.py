@@ -40,6 +40,9 @@ CONF_MONITORED_SENSORS: Final = "monitored_sensors"
 # When True (default), Vigil auto-watches every motion/occupancy binary_sensor
 # and CONF_MONITORED_SENSORS is ignored — "select all", no picking required.
 CONF_MONITOR_ALL: Final = "monitor_all_motion"
+# Sensors never monitored in ANY mode (e.g. an outdoor motion sensor that
+# slips through auto-discovery). Applied on top of monitor-all / explicit list.
+CONF_GLOBAL_EXCLUDE: Final = "excluded_global"
 CONF_EXCLUDED: Final = "excluded"  # used as f"{CONF_EXCLUDED}_{mode}"
 # Outdoor person/approach sensors (e.g. Frigate *_person_occupancy). These do
 # NOT count as indoor trips; instead they boost the score of indoor movement
