@@ -52,8 +52,6 @@ from .const import (
     DEFAULT_REALERT_COOLDOWN,
     DEFAULT_TRIP_WEIGHT,
     DOMAIN,
-    MOTION_DEVICE_CLASSES,
-    PERSON_SENSOR_HINT,
     SAFETY_CAP_S,
     SCORE_MAX,
     SCORE_MIN,
@@ -61,6 +59,7 @@ from .const import (
     TIER_NONE,
     TIER_NOTIFY,
 )
+from .discovery import discover_motion_sensors, discover_person_sensors
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -144,23 +143,10 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         await self._store.async_save(self.tunables)
         self.async_update_listeners()
 
-    def _discover(self, *, person: bool) -> list[str]:
-        """Auto-discover binary_sensors: movement, or outdoor person sensors."""
-        out: list[str] = []
-        for state in self.hass.states.async_all("binary_sensor"):
-            eid = state.entity_id
-            is_person = PERSON_SENSOR_HINT in eid
-            if person:
-                if is_person:
-                    out.append(eid)
-            elif not is_person and state.attributes.get("device_class") in MOTION_DEVICE_CLASSES:
-                out.append(eid)
-        return out
-
     def _master_sensors(self) -> list[str]:
         """All candidate indoor sensors (auto-all, or the explicit list)."""
         if self.get_config(CONF_MONITOR_ALL, True):
-            return self._discover(person=False)
+            return discover_motion_sensors(self.hass)
         return list(self.get_config(CONF_MONITORED_SENSORS, []) or [])
 
     def monitored_sensors(self, mode: str | None) -> list[str]:
@@ -173,7 +159,7 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
     def approach_sensors(self) -> list[str]:
         """Outdoor person/approach sensors that boost (not trigger) the score."""
         if self.get_config(CONF_APPROACH_ALL, True):
-            return self._discover(person=True)
+            return discover_person_sensors(self.hass)
         return list(self.get_config(CONF_APPROACH_SENSORS, []) or [])
 
     def cutpoints(self, mode: str) -> tuple[float, float]:

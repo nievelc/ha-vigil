@@ -70,13 +70,19 @@ class VigilAlarmPanel(VigilEntity, AlarmControlPanelEntity):
 
     @property
     def extra_state_attributes(self) -> dict:
+        coord = self.coordinator
+        monitored = coord._master_sensors()
+        approach = coord.approach_sensors()
         return {
-            "confidence": round(self.coordinator.score),
-            "tier": self.coordinator.tier,
-            "armed_mode": self.coordinator.armed_mode,
-            "sounding": self.coordinator.sounding,
-            "test_mode": self.coordinator.test_mode,
-            "last_trip": self.coordinator.last_trip_name,
+            "confidence": round(coord.score),
+            "tier": coord.tier,
+            "armed_mode": coord.armed_mode,
+            "sounding": coord.sounding,
+            "test_mode": coord.test_mode,
+            "last_trip": coord.last_trip_name,
+            "monitored_sensor_count": len(monitored),
+            "monitored_sensors": monitored,
+            "approach_sensors": approach,
         }
 
     # ------------------------------------------------------------------

@@ -40,9 +40,8 @@ from .const import (
     DEFAULT_TTS_ENGINE,
     DOMAIN,
     MODE_LABELS,
-    MOTION_DEVICE_CLASSES,
-    PERSON_SENSOR_HINT,
 )
+from .discovery import discover_motion_sensors, discover_person_sensors
 
 
 def _core_schema(d: dict[str, Any]) -> vol.Schema:
@@ -88,19 +87,6 @@ def _core_schema(d: dict[str, Any]) -> vol.Schema:
     )
 
 
-def _discover_sensors(hass, *, person: bool) -> list[str]:
-    """Auto-discover movement sensors, or outdoor person sensors."""
-    out: list[str] = []
-    for state in hass.states.async_all("binary_sensor"):
-        is_person = PERSON_SENSOR_HINT in state.entity_id
-        if person:
-            if is_person:
-                out.append(state.entity_id)
-        elif not is_person and state.attributes.get("device_class") in MOTION_DEVICE_CLASSES:
-            out.append(state.entity_id)
-    return sorted(out)
-
-
 def _sensors_schema(hass, d: dict[str, Any]) -> vol.Schema:
     """'Monitor all' toggles (default on) + explicit lists + per-mode exclusions.
 
@@ -114,7 +100,7 @@ def _sensors_schema(hass, d: dict[str, Any]) -> vol.Schema:
         ): selector.BooleanSelector(),
         vol.Optional(
             CONF_MONITORED_SENSORS,
-            default=d.get(CONF_MONITORED_SENSORS) or _discover_sensors(hass, person=False),
+            default=d.get(CONF_MONITORED_SENSORS) or discover_motion_sensors(hass),
         ): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
         ),
@@ -123,7 +109,7 @@ def _sensors_schema(hass, d: dict[str, Any]) -> vol.Schema:
         ): selector.BooleanSelector(),
         vol.Optional(
             CONF_APPROACH_SENSORS,
-            default=d.get(CONF_APPROACH_SENSORS) or _discover_sensors(hass, person=True),
+            default=d.get(CONF_APPROACH_SENSORS) or discover_person_sensors(hass),
         ): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
         ),

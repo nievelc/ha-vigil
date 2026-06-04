@@ -52,8 +52,12 @@ CONF_PRESENCE_ENTITIES: Final = "presence_entities"
 
 # Device classes treated as "movement" for auto-discovery.
 MOTION_DEVICE_CLASSES: Final = ("motion", "occupancy", "moving", "presence")
-# Substring identifying an outdoor person-detection sensor (e.g. Frigate).
+# Suffix identifying an outdoor person-detection sensor (e.g. Frigate
+# "<camera>_person_occupancy"). Routed to the approach booster, never monitored.
 PERSON_SENSOR_HINT: Final = "person_occupancy"
+# Integrations whose binary_sensors are camera object-detections (cat/dog/fox/
+# car/person per zone) and must NOT be auto-watched as indoor movement.
+EXCLUDED_DISCOVERY_PLATFORMS: Final = ("frigate",)
 CONF_NOTIFY_TARGETS: Final = "notify_targets"
 CONF_COLOUR_LIGHTS: Final = "colour_lights"
 CONF_FLASH_LIGHTS: Final = "flash_lights"
