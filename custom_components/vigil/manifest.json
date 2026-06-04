@@ -1,0 +1,14 @@
+{
+  "domain": "vigil",
+  "name": "Vigil",
+  "after_dependencies": ["tts", "camera"],
+  "codeowners": ["@nievelc"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/nievelc/ha-vigil",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/nievelc/ha-vigil/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

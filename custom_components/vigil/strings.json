@@ -1,0 +1,78 @@
+{
+  "config": {
+    "single_instance_allowed": "Vigil is already configured.",
+    "step": {
+      "user": {
+        "title": "Vigil — core settings",
+        "description": "Arming code (optional), delays, and the spoken deterrent. You'll pick sensors and outputs next.",
+        "data": {
+          "code": "Arm/disarm code (leave blank for none)",
+          "code_arm_required": "Require the code to arm",
+          "exit_delay": "Exit delay (time to leave after arming)",
+          "entry_delay": "Entry delay (grace period before the full alarm sounds)",
+          "tts_engine": "Text-to-speech engine",
+          "tts_voice": "TTS voice (optional)",
+          "intruder_message": "Spoken deterrent message"
+        }
+      },
+      "sensors": {
+        "title": "Vigil — monitored sensors per mode",
+        "description": "Choose which binary sensors are watched in each arming mode. Home/Night typically watch fewer sensors (e.g. downstairs only) so movement where you are is ignored.",
+        "data": {
+          "sensors_away": "Away — monitored sensors",
+          "sensors_home": "Home — monitored sensors",
+          "sensors_night": "Night — monitored sensors",
+          "sensors_vacation": "Vacation — monitored sensors"
+        }
+      },
+      "response": {
+        "title": "Vigil — outputs & response",
+        "description": "Lights, speakers, who gets notified, and auto-disarm presence.",
+        "data": {
+          "colour_lights": "Colour lights (flash red/blue)",
+          "flash_lights": "Flash lights (toggle on/off)",
+          "speakers": "Speakers (spoken deterrent)",
+          "presence_entities": "Auto-disarm when these people arrive",
+          "notify_targets": "Mobile notification targets",
+          "camera": "Camera for notification snapshot (optional)"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Vigil — core settings",
+        "data": {
+          "code": "Arm/disarm code (leave blank for none)",
+          "code_arm_required": "Require the code to arm",
+          "exit_delay": "Exit delay (time to leave after arming)",
+          "entry_delay": "Entry delay (grace period before the full alarm sounds)",
+          "tts_engine": "Text-to-speech engine",
+          "tts_voice": "TTS voice (optional)",
+          "intruder_message": "Spoken deterrent message"
+        }
+      },
+      "sensors": {
+        "title": "Vigil — monitored sensors per mode",
+        "data": {
+          "sensors_away": "Away — monitored sensors",
+          "sensors_home": "Home — monitored sensors",
+          "sensors_night": "Night — monitored sensors",
+          "sensors_vacation": "Vacation — monitored sensors"
+        }
+      },
+      "response": {
+        "title": "Vigil — outputs & response",
+        "data": {
+          "colour_lights": "Colour lights (flash red/blue)",
+          "flash_lights": "Flash lights (toggle on/off)",
+          "speakers": "Speakers (spoken deterrent)",
+          "presence_entities": "Auto-disarm when these people arrive",
+          "notify_targets": "Mobile notification targets",
+          "camera": "Camera for notification snapshot (optional)"
+        }
+      }
+    }
+  }
+}
