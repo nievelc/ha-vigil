@@ -17,10 +17,12 @@
       },
       "sensors": {
         "title": "Vigil — sensors",
-        "description": "Pick your monitored sensors once. Every arming mode watches all of them; use a mode's exclusion list only to make that mode ignore specific sensors (e.g. Home ignores the lounge). Approach sensors (outdoor person detection) don't trigger the alarm — they boost the confidence of indoor movement seen around the same time.",
+        "description": "Leave both 'all' toggles on and you don't need to pick anything — Vigil watches every motion/occupancy sensor and uses every outdoor person sensor automatically. Turn a toggle off only if you want to hand-pick from the (pre-filled) list below it. Per-mode exclusions remove specific sensors from one mode (e.g. Home ignores the lounge). Approach sensors never trigger the alarm — they boost indoor movement seen around the same time.",
         "data": {
-          "monitored_sensors": "Monitored sensors (watched in every mode)",
-          "approach_sensors": "Approach sensors — outdoor person detection (boost only)",
+          "monitor_all_motion": "Watch ALL detected motion/occupancy sensors (recommended)",
+          "monitored_sensors": "…or hand-pick monitored sensors (only used if the toggle above is off)",
+          "approach_all_person": "Use ALL outdoor person-detection sensors as approach",
+          "approach_sensors": "…or hand-pick approach sensors (only used if the toggle above is off)",
           "excluded_away": "Away — exclude these sensors (leave empty = watch all)",
           "excluded_home": "Home — exclude these sensors (leave empty = watch all)",
           "excluded_night": "Night — exclude these sensors (leave empty = watch all)",
@@ -57,10 +59,12 @@
       },
       "sensors": {
         "title": "Vigil — sensors",
-        "description": "Monitored sensors are watched in every mode; a mode's exclusion list removes specific sensors from that mode. Approach sensors boost confidence but never trigger the alarm on their own.",
+        "description": "Leave both 'all' toggles on to auto-watch every motion/occupancy sensor and use every outdoor person sensor. Turn one off to hand-pick from the pre-filled list. Per-mode exclusions remove specific sensors from one mode. Approach sensors boost confidence but never trigger the alarm on their own.",
         "data": {
-          "monitored_sensors": "Monitored sensors (watched in every mode)",
-          "approach_sensors": "Approach sensors — outdoor person detection (boost only)",
+          "monitor_all_motion": "Watch ALL detected motion/occupancy sensors (recommended)",
+          "monitored_sensors": "…or hand-pick monitored sensors (only used if the toggle above is off)",
+          "approach_all_person": "Use ALL outdoor person-detection sensors as approach",
+          "approach_sensors": "…or hand-pick approach sensors (only used if the toggle above is off)",
           "excluded_away": "Away — exclude these sensors (leave empty = watch all)",
           "excluded_home": "Home — exclude these sensors (leave empty = watch all)",
           "excluded_night": "Night — exclude these sensors (leave empty = watch all)",

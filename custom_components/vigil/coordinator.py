@@ -22,6 +22,7 @@ from .const import (
     ARM_MODES,
     CONF_ALARM_CUTPOINT,
     CONF_ANNOUNCE_VOLUME,
+    CONF_APPROACH_ALL,
     CONF_APPROACH_BOOST,
     CONF_APPROACH_SENSORS,
     CONF_APPROACH_WINDOW_S,
@@ -33,6 +34,7 @@ from .const import (
     CONF_PRESENCE_ENTITIES,
     CONF_INTERNAL_ALARM_ENABLED,
     CONF_MOBILE_NOTIFY_ENABLED,
+    CONF_MONITOR_ALL,
     CONF_MONITORED_SENSORS,
     CONF_NOTIFY_CUTPOINT,
     CONF_REALERT_COOLDOWN,
@@ -50,6 +52,8 @@ from .const import (
     DEFAULT_REALERT_COOLDOWN,
     DEFAULT_TRIP_WEIGHT,
     DOMAIN,
+    MOTION_DEVICE_CLASSES,
+    PERSON_SENSOR_HINT,
     SAFETY_CAP_S,
     SCORE_MAX,
     SCORE_MIN,
@@ -140,16 +144,36 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         await self._store.async_save(self.tunables)
         self.async_update_listeners()
 
+    def _discover(self, *, person: bool) -> list[str]:
+        """Auto-discover binary_sensors: movement, or outdoor person sensors."""
+        out: list[str] = []
+        for state in self.hass.states.async_all("binary_sensor"):
+            eid = state.entity_id
+            is_person = PERSON_SENSOR_HINT in eid
+            if person:
+                if is_person:
+                    out.append(eid)
+            elif not is_person and state.attributes.get("device_class") in MOTION_DEVICE_CLASSES:
+                out.append(eid)
+        return out
+
+    def _master_sensors(self) -> list[str]:
+        """All candidate indoor sensors (auto-all, or the explicit list)."""
+        if self.get_config(CONF_MONITOR_ALL, True):
+            return self._discover(person=False)
+        return list(self.get_config(CONF_MONITORED_SENSORS, []) or [])
+
     def monitored_sensors(self, mode: str | None) -> list[str]:
-        """Master monitored list minus this mode's exclusions."""
+        """Master monitored set minus this mode's exclusions."""
         if mode is None:
             return []
-        master = list(self.get_config(CONF_MONITORED_SENSORS, []) or [])
         excluded = set(self.get_config(f"{CONF_EXCLUDED}_{mode}", []) or [])
-        return [s for s in master if s not in excluded]
+        return [s for s in self._master_sensors() if s not in excluded]
 
     def approach_sensors(self) -> list[str]:
         """Outdoor person/approach sensors that boost (not trigger) the score."""
+        if self.get_config(CONF_APPROACH_ALL, True):
+            return self._discover(person=True)
         return list(self.get_config(CONF_APPROACH_SENSORS, []) or [])
 
     def cutpoints(self, mode: str) -> tuple[float, float]:

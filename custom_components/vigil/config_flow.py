@@ -16,6 +16,7 @@ from homeassistant.helpers import selector
 
 from .const import (
     ARM_MODES,
+    CONF_APPROACH_ALL,
     CONF_APPROACH_SENSORS,
     CONF_CAMERA,
     CONF_CODE,
@@ -26,6 +27,7 @@ from .const import (
     CONF_EXIT_DELAY,
     CONF_FLASH_LIGHTS,
     CONF_INTRUDER_MESSAGE,
+    CONF_MONITOR_ALL,
     CONF_MONITORED_SENSORS,
     CONF_NOTIFY_TARGETS,
     CONF_PRESENCE_ENTITIES,
@@ -38,6 +40,8 @@ from .const import (
     DEFAULT_TTS_ENGINE,
     DOMAIN,
     MODE_LABELS,
+    MOTION_DEVICE_CLASSES,
+    PERSON_SENSOR_HINT,
 )
 
 
@@ -84,16 +88,42 @@ def _core_schema(d: dict[str, Any]) -> vol.Schema:
     )
 
 
-def _sensors_schema(d: dict[str, Any]) -> vol.Schema:
-    """One master monitored list + approach sensors + per-mode exclusions."""
+def _discover_sensors(hass, *, person: bool) -> list[str]:
+    """Auto-discover movement sensors, or outdoor person sensors."""
+    out: list[str] = []
+    for state in hass.states.async_all("binary_sensor"):
+        is_person = PERSON_SENSOR_HINT in state.entity_id
+        if person:
+            if is_person:
+                out.append(state.entity_id)
+        elif not is_person and state.attributes.get("device_class") in MOTION_DEVICE_CLASSES:
+            out.append(state.entity_id)
+    return sorted(out)
+
+
+def _sensors_schema(hass, d: dict[str, Any]) -> vol.Schema:
+    """'Monitor all' toggles (default on) + explicit lists + per-mode exclusions.
+
+    With the toggles on, no sensor picking is needed at all. The explicit lists
+    are pre-filled with everything detected, so even if you turn a toggle off
+    you start from "all selected" and just remove what you don't want.
+    """
     fields: dict = {
         vol.Optional(
-            CONF_MONITORED_SENSORS, default=d.get(CONF_MONITORED_SENSORS, [])
+            CONF_MONITOR_ALL, default=d.get(CONF_MONITOR_ALL, True)
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_MONITORED_SENSORS,
+            default=d.get(CONF_MONITORED_SENSORS) or _discover_sensors(hass, person=False),
         ): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
         ),
         vol.Optional(
-            CONF_APPROACH_SENSORS, default=d.get(CONF_APPROACH_SENSORS, [])
+            CONF_APPROACH_ALL, default=d.get(CONF_APPROACH_ALL, True)
+        ): selector.BooleanSelector(),
+        vol.Optional(
+            CONF_APPROACH_SENSORS,
+            default=d.get(CONF_APPROACH_SENSORS) or _discover_sensors(hass, person=True),
         ): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
         ),
@@ -183,7 +213,7 @@ class VigilConfigFlow(ConfigFlow, domain=DOMAIN):
             self._data.update(user_input)
             return await self.async_step_response()
         return self.async_show_form(
-            step_id="sensors", data_schema=_sensors_schema({})
+            step_id="sensors", data_schema=_sensors_schema(self.hass, {})
         )
 
     async def async_step_response(
@@ -231,7 +261,7 @@ class VigilOptionsFlow(OptionsFlow):
             self._data.update(user_input)
             return await self.async_step_response()
         return self.async_show_form(
-            step_id="sensors", data_schema=_sensors_schema(self._merged())
+            step_id="sensors", data_schema=_sensors_schema(self.hass, self._merged())
         )
 
     async def async_step_response(

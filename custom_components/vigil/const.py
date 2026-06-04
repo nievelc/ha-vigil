@@ -37,12 +37,23 @@ TIER_ALARM: Final = "alarm"
 # per-mode exclusion list (keyed f"{CONF_EXCLUDED}_{mode}"). Adding a sensor to
 # the master list applies it to every mode automatically.
 CONF_MONITORED_SENSORS: Final = "monitored_sensors"
+# When True (default), Vigil auto-watches every motion/occupancy binary_sensor
+# and CONF_MONITORED_SENSORS is ignored — "select all", no picking required.
+CONF_MONITOR_ALL: Final = "monitor_all_motion"
 CONF_EXCLUDED: Final = "excluded"  # used as f"{CONF_EXCLUDED}_{mode}"
 # Outdoor person/approach sensors (e.g. Frigate *_person_occupancy). These do
 # NOT count as indoor trips; instead they boost the score of indoor movement
 # that happens while (or shortly after) someone is detected approaching.
 CONF_APPROACH_SENSORS: Final = "approach_sensors"
+# When True (default), auto-use every *_person_occupancy binary_sensor as an
+# approach sensor and CONF_APPROACH_SENSORS is ignored.
+CONF_APPROACH_ALL: Final = "approach_all_person"
 CONF_PRESENCE_ENTITIES: Final = "presence_entities"
+
+# Device classes treated as "movement" for auto-discovery.
+MOTION_DEVICE_CLASSES: Final = ("motion", "occupancy", "moving", "presence")
+# Substring identifying an outdoor person-detection sensor (e.g. Frigate).
+PERSON_SENSOR_HINT: Final = "person_occupancy"
 CONF_NOTIFY_TARGETS: Final = "notify_targets"
 CONF_COLOUR_LIGHTS: Final = "colour_lights"
 CONF_FLASH_LIGHTS: Final = "flash_lights"

@@ -31,9 +31,10 @@ card and any automation that understands alarm panels just work.
 ## Features
 
 - Native `alarm_control_panel` with **Away / Home / Night / Vacation** modes.
-  Pick your monitored sensors **once**; every mode watches all of them, and you
+  By default Vigil **auto-watches every motion/occupancy sensor** — no picking
+  required (toggle off to hand-pick instead). Every mode watches them all; you
   optionally **exclude** specific sensors per mode (e.g. Home ignores the lounge).
-  Add a sensor later and it applies to every mode automatically.
+  New sensors are included automatically.
 - Unified confidence engine: per-sensor trips accumulate, concurrent activity
   adds weight, and the score decays over a window of stillness.
 - **Approach booster** — feed outdoor person-detection sensors (e.g. Frigate
