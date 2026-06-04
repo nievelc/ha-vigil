@@ -16,17 +16,19 @@ from homeassistant.helpers import selector
 
 from .const import (
     ARM_MODES,
+    CONF_APPROACH_SENSORS,
     CONF_CAMERA,
     CONF_CODE,
     CONF_CODE_ARM_REQUIRED,
     CONF_COLOUR_LIGHTS,
     CONF_ENTRY_DELAY,
+    CONF_EXCLUDED,
     CONF_EXIT_DELAY,
     CONF_FLASH_LIGHTS,
     CONF_INTRUDER_MESSAGE,
+    CONF_MONITORED_SENSORS,
     CONF_NOTIFY_TARGETS,
     CONF_PRESENCE_ENTITIES,
-    CONF_SENSORS,
     CONF_SPEAKERS,
     CONF_TTS_ENGINE,
     CONF_TTS_VOICE,
@@ -83,16 +85,25 @@ def _core_schema(d: dict[str, Any]) -> vol.Schema:
 
 
 def _sensors_schema(d: dict[str, Any]) -> vol.Schema:
-    """One binary_sensor multi-select per arming mode."""
-    fields: dict = {}
+    """One master monitored list + approach sensors + per-mode exclusions."""
+    fields: dict = {
+        vol.Optional(
+            CONF_MONITORED_SENSORS, default=d.get(CONF_MONITORED_SENSORS, [])
+        ): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
+        ),
+        vol.Optional(
+            CONF_APPROACH_SENSORS, default=d.get(CONF_APPROACH_SENSORS, [])
+        ): selector.EntitySelector(
+            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
+        ),
+    }
     for mode in ARM_MODES:
-        key = f"{CONF_SENSORS}_{mode}"
+        key = f"{CONF_EXCLUDED}_{mode}"
         fields[
             vol.Optional(key, default=d.get(key, []))
         ] = selector.EntitySelector(
-            selector.EntitySelectorConfig(
-                domain="binary_sensor", multiple=True
-            )
+            selector.EntitySelectorConfig(domain="binary_sensor", multiple=True)
         )
     return vol.Schema(fields)
 

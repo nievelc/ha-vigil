@@ -22,20 +22,26 @@ from .const import (
     ARM_MODES,
     CONF_ALARM_CUTPOINT,
     CONF_ANNOUNCE_VOLUME,
+    CONF_APPROACH_BOOST,
+    CONF_APPROACH_SENSORS,
+    CONF_APPROACH_WINDOW_S,
     CONF_CONCURRENCY_WEIGHT,
     CONF_DECAY_WINDOW_MIN,
     CONF_ENTRY_DELAY,
+    CONF_EXCLUDED,
     CONF_EXIT_DELAY,
     CONF_PRESENCE_ENTITIES,
     CONF_INTERNAL_ALARM_ENABLED,
     CONF_MOBILE_NOTIFY_ENABLED,
+    CONF_MONITORED_SENSORS,
     CONF_NOTIFY_CUTPOINT,
     CONF_REALERT_COOLDOWN,
-    CONF_SENSORS,
     CONF_TEST_MODE,
     CONF_TRIP_WEIGHT,
     DECAY_TICK_S,
     DEFAULT_ANNOUNCE_VOLUME,
+    DEFAULT_APPROACH_BOOST,
+    DEFAULT_APPROACH_WINDOW_S,
     DEFAULT_CONCURRENCY_WEIGHT,
     DEFAULT_CUTPOINTS,
     DEFAULT_DECAY_WINDOW_MIN,
@@ -88,6 +94,8 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         self._last_activity: float = 0.0
         self._last_recompute: float = 0.0
         self._active_sensors: set[str] = set()
+        self._approach_active: set[str] = set()
+        self._last_approach: float = 0.0
         self._last_alert_at: float = 0.0
         self.last_trip_name: str | None = None
 
@@ -133,10 +141,16 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         self.async_update_listeners()
 
     def monitored_sensors(self, mode: str | None) -> list[str]:
-        """Return the configured sensor set for a mode."""
+        """Master monitored list minus this mode's exclusions."""
         if mode is None:
             return []
-        return list(self.get_config(f"{CONF_SENSORS}_{mode}", []) or [])
+        master = list(self.get_config(CONF_MONITORED_SENSORS, []) or [])
+        excluded = set(self.get_config(f"{CONF_EXCLUDED}_{mode}", []) or [])
+        return [s for s in master if s not in excluded]
+
+    def approach_sensors(self) -> list[str]:
+        """Outdoor person/approach sensors that boost (not trigger) the score."""
+        return list(self.get_config(CONF_APPROACH_SENSORS, []) or [])
 
     def cutpoints(self, mode: str) -> tuple[float, float]:
         """Return (notify, alarm) cutpoints for a mode."""
@@ -256,6 +270,8 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         self.tier = TIER_NONE
         self.alerting = False
         self._active_sensors = set()
+        self._approach_active = set()
+        self._last_approach = 0.0
         self._last_activity = 0.0
         self._last_alert_at = 0.0
 
@@ -283,9 +299,11 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         sensors = self.monitored_sensors(self.armed_mode)
         if not sensors:
             _LOGGER.warning("Vigil armed in %s with no monitored sensors", self.armed_mode)
+        watched = list(dict.fromkeys(sensors + self.approach_sensors()))
+        if not watched:
             return
         self._unsub_sensors = async_track_state_change_event(
-            self.hass, sensors, self._handle_sensor_event
+            self.hass, watched, self._handle_sensor_event
         )
 
     @callback
@@ -305,7 +323,7 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
 
     @callback
     def _handle_sensor_event(self, event: Event) -> None:
-        """A monitored sensor changed state."""
+        """A monitored or approach sensor changed state."""
         if not self._scoring_active:
             return
         new = event.data.get("new_state")
@@ -313,6 +331,17 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
         if new is None:
             return
         entity_id = event.data["entity_id"]
+        approach_set = set(self.approach_sensors())
+
+        # Approach sensors don't trip the alarm; they mark that a person was seen
+        # approaching, which boosts indoor movement scored around the same time.
+        if entity_id in approach_set:
+            if new.state == "on":
+                self._approach_active.add(entity_id)
+                self._last_approach = time.monotonic()
+            else:
+                self._approach_active.discard(entity_id)
+            return
 
         if new.state == "on":
             self._active_sensors.add(entity_id)
@@ -323,10 +352,24 @@ class VigilCoordinator(DataUpdateCoordinator[None]):
                     self.get_tunable(CONF_CONCURRENCY_WEIGHT, DEFAULT_CONCURRENCY_WEIGHT)
                 )
                 bonus = concurrency_weight * max(0, len(self._active_sensors) - 1)
-                self._add_score(trip_weight + bonus)
+                self._add_score(trip_weight + bonus + self._approach_bonus())
                 self.last_trip_name = new.name or entity_id
         else:
             self._active_sensors.discard(entity_id)
+
+    @callback
+    def _approach_bonus(self) -> float:
+        """Extra score when a person was detected approaching recently."""
+        boost = float(self.get_tunable(CONF_APPROACH_BOOST, DEFAULT_APPROACH_BOOST))
+        if not boost:
+            return 0.0
+        window = float(
+            self.get_tunable(CONF_APPROACH_WINDOW_S, DEFAULT_APPROACH_WINDOW_S)
+        )
+        recent = self._last_approach and (time.monotonic() - self._last_approach) <= window
+        if self._approach_active or recent:
+            return boost
+        return 0.0
 
     @callback
     def _add_score(self, amount: float) -> None:

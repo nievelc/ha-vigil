@@ -33,8 +33,15 @@ TIER_ALARM: Final = "alarm"
 # ---------------------------------------------------------------------------
 # Config-flow / options keys (structural — set in the UI dialog)
 # ---------------------------------------------------------------------------
-# Per-mode monitored sensor sets. Keyed e.g. CONF_SENSORS + "_" + mode.
-CONF_SENSORS: Final = "sensors"  # used as f"{CONF_SENSORS}_{mode}"
+# One master monitored-sensor list; each mode watches all of them MINUS its
+# per-mode exclusion list (keyed f"{CONF_EXCLUDED}_{mode}"). Adding a sensor to
+# the master list applies it to every mode automatically.
+CONF_MONITORED_SENSORS: Final = "monitored_sensors"
+CONF_EXCLUDED: Final = "excluded"  # used as f"{CONF_EXCLUDED}_{mode}"
+# Outdoor person/approach sensors (e.g. Frigate *_person_occupancy). These do
+# NOT count as indoor trips; instead they boost the score of indoor movement
+# that happens while (or shortly after) someone is detected approaching.
+CONF_APPROACH_SENSORS: Final = "approach_sensors"
 CONF_PRESENCE_ENTITIES: Final = "presence_entities"
 CONF_NOTIFY_TARGETS: Final = "notify_targets"
 CONF_COLOUR_LIGHTS: Final = "colour_lights"
@@ -60,6 +67,8 @@ CONF_ANNOUNCE_VOLUME: Final = "announce_volume"
 CONF_REALERT_COOLDOWN: Final = "realert_cooldown_seconds"
 CONF_TRIP_WEIGHT: Final = "trip_weight"
 CONF_CONCURRENCY_WEIGHT: Final = "concurrency_weight"
+CONF_APPROACH_BOOST: Final = "approach_boost"
+CONF_APPROACH_WINDOW_S: Final = "approach_window_seconds"
 
 # Channel + per-speaker switches: f"{CONF_SPEAKER_ENABLED}_{entity_id}"
 CONF_MOBILE_NOTIFY_ENABLED: Final = "mobile_notification_enabled"
@@ -84,6 +93,8 @@ DEFAULT_ANNOUNCE_VOLUME: Final = 1.0
 DEFAULT_REALERT_COOLDOWN: Final = 120
 DEFAULT_TRIP_WEIGHT: Final = 12.0
 DEFAULT_CONCURRENCY_WEIGHT: Final = 8.0
+DEFAULT_APPROACH_BOOST: Final = 25.0
+DEFAULT_APPROACH_WINDOW_S: Final = 60.0
 DEFAULT_EXIT_DELAY: Final = 60
 DEFAULT_ENTRY_DELAY: Final = 30
 DEFAULT_TTS_ENGINE: Final = "tts.google_translate_en_com"

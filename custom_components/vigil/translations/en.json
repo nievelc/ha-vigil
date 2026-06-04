@@ -16,13 +16,15 @@
         }
       },
       "sensors": {
-        "title": "Vigil — monitored sensors per mode",
-        "description": "Choose which binary sensors are watched in each arming mode. Home/Night typically watch fewer sensors (e.g. downstairs only) so movement where you are is ignored.",
+        "title": "Vigil — sensors",
+        "description": "Pick your monitored sensors once. Every arming mode watches all of them; use a mode's exclusion list only to make that mode ignore specific sensors (e.g. Home ignores the lounge). Approach sensors (outdoor person detection) don't trigger the alarm — they boost the confidence of indoor movement seen around the same time.",
         "data": {
-          "sensors_away": "Away — monitored sensors",
-          "sensors_home": "Home — monitored sensors",
-          "sensors_night": "Night — monitored sensors",
-          "sensors_vacation": "Vacation — monitored sensors"
+          "monitored_sensors": "Monitored sensors (watched in every mode)",
+          "approach_sensors": "Approach sensors — outdoor person detection (boost only)",
+          "excluded_away": "Away — exclude these sensors (leave empty = watch all)",
+          "excluded_home": "Home — exclude these sensors (leave empty = watch all)",
+          "excluded_night": "Night — exclude these sensors (leave empty = watch all)",
+          "excluded_vacation": "Vacation — exclude these sensors (leave empty = watch all)"
         }
       },
       "response": {
@@ -54,12 +56,15 @@
         }
       },
       "sensors": {
-        "title": "Vigil — monitored sensors per mode",
+        "title": "Vigil — sensors",
+        "description": "Monitored sensors are watched in every mode; a mode's exclusion list removes specific sensors from that mode. Approach sensors boost confidence but never trigger the alarm on their own.",
         "data": {
-          "sensors_away": "Away — monitored sensors",
-          "sensors_home": "Home — monitored sensors",
-          "sensors_night": "Night — monitored sensors",
-          "sensors_vacation": "Vacation — monitored sensors"
+          "monitored_sensors": "Monitored sensors (watched in every mode)",
+          "approach_sensors": "Approach sensors — outdoor person detection (boost only)",
+          "excluded_away": "Away — exclude these sensors (leave empty = watch all)",
+          "excluded_home": "Home — exclude these sensors (leave empty = watch all)",
+          "excluded_night": "Night — exclude these sensors (leave empty = watch all)",
+          "excluded_vacation": "Vacation — exclude these sensors (leave empty = watch all)"
         }
       },
       "response": {
